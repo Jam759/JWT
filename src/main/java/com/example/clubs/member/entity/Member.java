@@ -2,16 +2,14 @@ package com.example.clubs.member.entity;
 
 import com.example.clubs.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Member extends BaseEntity {
 
     @Id
@@ -27,13 +25,17 @@ public class Member extends BaseEntity {
     @Column(length = 100, nullable = false)
     private String memberPassword;
 
-    // 새로운 회원을 생성하는 정적 메서드 (패스워드 암호화 고려)
-    public static Member createMember(String username, String email, String password) {
-        return Member.builder()
-                .memberUserName(username)
-                .memberEmail(email)
-                .memberPassword(password)  // 실제 구현 시 암호화된 값 사용
-                .build();
+    public void update(String memberUserName, String memberEmail){
+        this.memberUserName = memberUserName;
+        this.memberEmail = memberEmail;
     }
+
+    @Builder
+    public Member(String memberUserName, String memberEmail, String memberPassword) {
+        this.memberUserName = memberUserName;
+        this.memberEmail = memberEmail;
+        this.memberPassword = memberPassword;
+    }
+
 
 }

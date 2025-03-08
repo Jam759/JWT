@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root  # 루트 비밀번호 설정
-      MYSQL_DATABASE: mydb      # 기본 데이터베이스 설정
+      MYSQL_DATABASE: clubs      # 기본 데이터베이스 설정
       MYSQL_USER: study        # 사용자 계정 생성
       MYSQL_PASSWORD: root
       TZ: Asia/Seoul  # 시간대 설정
