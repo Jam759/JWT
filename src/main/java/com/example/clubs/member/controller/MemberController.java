@@ -4,15 +4,12 @@ import com.example.clubs.member.Service.MemberService;
 import com.example.clubs.member.dto.request.CreateMemberRequest;
 import com.example.clubs.member.dto.request.UpdateMemberRequest;
 import com.example.clubs.member.dto.response.GetMemberResponse;
-import com.example.clubs.member.exception.UserNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/member", produces = "application/json")
@@ -23,7 +20,7 @@ public class MemberController {
 
     // 🔹 회원 등록 (POST)
     @PostMapping
-    public ResponseEntity<CreateMemberRequest> createMember(@RequestBody CreateMemberRequest request) {
+    public ResponseEntity<CreateMemberRequest> createMember(@RequestBody @Valid CreateMemberRequest request) {
         CreateMemberRequest createdMember = memberService.createMember(request);
         return ResponseEntity.ok(createdMember);
     }
@@ -48,22 +45,11 @@ public class MemberController {
         return ResponseEntity.ok(updatedMember);
     }
 
-    // 🔹 회원 삭제 (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
         memberService.deleteMember(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ 이 컨트롤러 내부에서만 `UserNotFoundException` 처리
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUserNotFoundException(UserNotFoundException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "User Not Found");
-        response.put("message", ex.getMessage());
-        response.put("status", HttpStatus.NOT_FOUND.value());
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
 
 }
