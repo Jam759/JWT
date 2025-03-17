@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/member", produces = "application/json")
+@RequestMapping(value = "/auth", produces = "application/json")
 @RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
 
     // 🔹 회원 등록 (POST)
-    @PostMapping
+    @PostMapping("/v1/signup")
     public ResponseEntity<CreateMemberRequest> createMember(@RequestBody @Valid CreateMemberRequest request) {
         CreateMemberRequest createdMember = memberService.createMember(request);
         return ResponseEntity.ok(createdMember);
