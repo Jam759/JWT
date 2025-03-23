@@ -1,5 +1,6 @@
 package com.example.clubs.member.dto.request;
 
+import com.example.clubs.member.entity.Member;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -19,6 +20,13 @@ public class CreateMemberRequest {
 
     private String memberPassword;
 
+
+    public Member toEntity(){
+        return Member.builder()
+                .memberUserName(this.memberUserName)
+                .memberEmail(this.memberEmail)
+                .build();
+    }
 
 
 }

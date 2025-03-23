@@ -4,8 +4,6 @@ import com.example.clubs.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,10 +23,12 @@ public class Member extends BaseEntity {
     @Column(length = 100, nullable = false)
     private String memberPassword;
 
-    public void update(String memberUserName, String memberEmail){
+
+    public void update(String memberUserName, String memberEmail) {
         this.memberUserName = memberUserName;
         this.memberEmail = memberEmail;
     }
+
 
     @Builder
     public Member(String memberUserName, String memberEmail, String memberPassword) {
