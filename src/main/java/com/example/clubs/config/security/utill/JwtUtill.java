@@ -1,46 +1,117 @@
 package com.example.clubs.config.security.utill;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import java.security.Signature;
+import java.security.Key;
 import java.util.Date;
 
+@Component
+@Getter
 public class JwtUtill {
 
-    private final String SECRET_KET = "my_secret_key";
-    private final long EXPIRATION_TIME = 86400000; //1d
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+    @Value("${jwt.refresh-secret-key}")
+    private String refreshSecretKey;
+    @Value("${jwt.access-token-expiration}")
+    private long accessTokenExpiration;
+    @Value("${jwt.refresh-token-expiration}")
+    private long refreshTokenExpiration;
 
-    public String generatedToken(String username){
+    private Key accessKey;
+    private Key refreshKey;
+
+    public JwtUtill(){
+
+    }
+
+    @PostConstruct
+    public void init(){
+        this.accessKey = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.refreshKey = Keys.hmacShaKeyFor(refreshSecretKey.getBytes());
+    }
+
+    public String generateAccessToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("tokenType","access")
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KET)
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
+                .signWith(accessKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String getUsernameFromToken(String token){
-        return Jwts.parser()
-                .setSigningKey(SECRET_KET)
+    public String generateRefreshToken(String username){
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("tokenType","access")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
+                .signWith(refreshKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String getUsernameFromAccessToken(String token){
+        return Jwts.parserBuilder()
+                .setSigningKey(accessKey)
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
 
-    public boolean validateToken(String token){
+    public String getUsernameFromRefreshToken(String token){
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    // Access Token 유효성 검사
+    public boolean validateAccessToken(String token) {
+        return validateToken(token, "access");
+    }
+
+    // Refresh Token 유효성 검사
+    public boolean validateRefreshToken(String token) {
+        return validateToken(token, "refresh");
+    }
+
+    public boolean validateToken(String token,String tokenType) {
         try{
-            Jwts.parser().setSigningKey(SECRET_KET).parseClaimsJws(token);
+            Key key = "access".equals(tokenType) ? accessKey : refreshKey;
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            //토큰 유형 확인
+            String validTokenType = claims.get("tokenType",String.class);
+            if ((!"access".equals(validTokenType)) || (!"refresh".equals(validTokenType))) {
+                return false;
+            }
+
             return true;
-        }catch (Exception e){
+        }catch (JwtException | IllegalArgumentException e){
             return false;
         }
     }
 
-    public String resolveToken(HttpServletRequest request){
+    public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if(bearerToken != null && bearerToken.startsWith("Bearer")){
+        if (bearerToken != null && bearerToken.startsWith("Bearer")) {
             return bearerToken.substring(7);
         }
         return null;

@@ -31,7 +31,6 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException{
         try{
-
             LoginRequest loginRequest = new ObjectMapper().readValue(request.getInputStream(), LoginRequest.class);
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     loginRequest.getEmail(), loginRequest.getPassword()
@@ -44,9 +43,15 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException{
-        String token = jwtUtill.generatedToken(authResult.getName());
+        String username = authResult.getName();
+
+        String accessToken = jwtUtill.generateAccessToken(username);
+        String refreshToken = jwtUtill.generateRefreshToken(username);
+
         Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put("token", token);
+        tokenMap.put("accessToken", accessToken);
+        tokenMap.put("refreshToken", refreshToken);
+
         response.setContentType("application/json");
         response.getWriter().write(new ObjectMapper().writeValueAsString(tokenMap));
     }
