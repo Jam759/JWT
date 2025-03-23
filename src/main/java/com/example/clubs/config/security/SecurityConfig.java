@@ -2,7 +2,7 @@ package com.example.clubs.config.security;
 
 import com.example.clubs.config.security.filter.JwtAuthenticationFilter;
 import com.example.clubs.config.security.filter.JwtLoginFilter;
-import com.example.clubs.config.security.utill.JwtUtill;
+import com.example.clubs.config.security.utill.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,12 +20,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtUtill jwtUtill;
+    private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
 
-    public SecurityConfig(JwtUtill jwtUtill, UserDetailsService userDetailsService, AuthenticationConfiguration authenticationConfiguration) {
-        this.jwtUtill = jwtUtill;
+    public SecurityConfig(JwtUtil jwtUtil, UserDetailsService userDetailsService, AuthenticationConfiguration authenticationConfiguration) {
+        this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.authenticationConfiguration = authenticationConfiguration;
     }
@@ -41,11 +41,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/login", "/members").permitAll() // ✅ 회원가입 허용
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtLoginFilter(authenticationManager(), jwtUtill), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new JwtAuthenticationFilter(authenticationManager(), jwtUtill, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtLoginFilter(authenticationManager(), jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(authenticationManager(), jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
