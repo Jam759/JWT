@@ -2,6 +2,7 @@ package com.example.clubs.config.security.filter;
 
 import com.example.clubs.config.security.utill.JwtUtill;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,14 +28,24 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain chain) throws IOException, SecurityException{
+                                    FilterChain chain) throws IOException, SecurityException, ServletException {
         String token = jwtUtill.resolveToken(request);
-        if(token != null && jwtUtill.validateToken(token)){
-            String username = jwtUtill.getUsernameFromToken(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        if(token != null){
+            String tokenType = "access";
+
+            if(jwtUtill.validateToken(token,tokenType)){
+                String username = jwtUtill.getUsernameFromAccessToken(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
         }
+
+        chain.doFilter(request,response);
+
     }
 
 }
