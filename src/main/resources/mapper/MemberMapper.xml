@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.clubs.member.mapper.MemberMapper">
+
+    <resultMap id="MemberResultMap" type="com.example.clubs.member.entity.Member">
+        <id property="memberId" column="member_id"/>
+        <result property="memberUserName" column="member_user_name"/>
+        <result property="memberEmail" column="member_email"/>
+        <result property="memberPassword" column="member_password"/>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="MemberResultMap">
+        SELECT * FROM member WHERE member_id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="MemberResultMap">
+        SELECT * FROM member
+    </select>
+
+    <insert id="insert" parameterType="com.example.clubs.member.entity.Member">
+        INSERT INTO member (member_user_name, member_email, member_password)
+        VALUES (#{memberUserName}, #{memberEmail}, #{memberPassword})
+    </insert>
+
+    <update id="update" parameterType="com.example.clubs.member.entity.Member">
+        UPDATE member
+        SET member_user_name = #{memberUserName},
+        member_email = #{memberEmail},
+        member_password = #{memberPassword}
+        WHERE member_id = #{memberId}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM member WHERE member_id = #{id}
+    </delete>
+
+</mapper>
