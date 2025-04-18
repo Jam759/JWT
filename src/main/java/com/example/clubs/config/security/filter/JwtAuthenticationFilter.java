@@ -64,7 +64,6 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
                             SecurityContextHolder.getContext().setAuthentication(authentication);
                             return true; // 의미 없는 반환값, 흐름 유지를 위해 사용
                         });
-
             }
         }else{
 
